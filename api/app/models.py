@@ -41,7 +41,7 @@ class Incident(Base):
     status = Column(String, default="ACTIVE")  # ACTIVE | RESOLVED | CANCELLED
     started_at = Column(DateTime, default=datetime.utcnow)
     ended_at = Column(DateTime, nullable=True)
-    metadata = Column(JSON, nullable=True)
+    incident_metadata = Column(JSON, nullable=True)
     
     user = relationship("User", back_populates="incidents")
     events = relationship("IncidentEvent", back_populates="incident")
@@ -52,6 +52,6 @@ class IncidentEvent(Base):
     incident_id = Column(Integer, ForeignKey("incidents.id"))
     step = Column(String)
     timestamp = Column(DateTime, default=datetime.utcnow)
-    metadata = Column(JSON, nullable=True)
+    event_metadata = Column(JSON, nullable=True)
     
     incident = relationship("Incident", back_populates="events")
