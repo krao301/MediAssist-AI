@@ -84,6 +84,27 @@ def find_nearest_hospital(lat: float, lng: float, maps_api_key: str) -> dict:
         if data.get("results"):
             place = data["results"][0]
             place_loc = place["geometry"]["location"]
+            place_id = place.get("place_id")
+            
+            # Get phone number from Place Details API
+            phone_number = None
+            if place_id:
+                try:
+                    details_url = "https://maps.googleapis.com/maps/api/place/details/json"
+                    details_params = {
+                        "place_id": place_id,
+                        "fields": "formatted_phone_number,international_phone_number",
+                        "key": maps_api_key
+                    }
+                    details_response = requests.get(details_url, params=details_params)
+                    details_data = details_response.json()
+                    if details_data.get("result"):
+                        phone_number = (
+                            details_data["result"].get("international_phone_number") or 
+                            details_data["result"].get("formatted_phone_number")
+                        )
+                except Exception as e:
+                    print(f"Error fetching hospital phone: {e}")
             
             # Calculate distance
             distance_m = haversine(lng, lat, place_loc["lng"], place_loc["lat"])
@@ -97,6 +118,7 @@ def find_nearest_hospital(lat: float, lng: float, maps_api_key: str) -> dict:
             return {
                 "name": place.get("name", "Hospital"),
                 "address": place.get("vicinity", ""),
+                "phone": phone_number,
                 "distance_km": round(distance_km, 2),
                 "eta_minutes": max(1, eta_minutes),
                 "directions_url": directions_url

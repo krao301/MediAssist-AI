@@ -131,3 +131,71 @@ def make_contact_alert_call(
             "success": False,
             "error": str(e)
         }
+
+
+def notify_hospital(
+    hospital_phone: str,
+    incident_id: int,
+    emergency_type: str,
+    severity: str,
+    patient_location: dict,
+    eta_minutes: int
+) -> dict:
+    """
+    Notify hospital of incoming emergency patient
+    
+    Args:
+        hospital_phone: Hospital emergency department phone number
+        incident_id: Incident ID
+        emergency_type: Type of emergency
+        severity: Emergency severity level
+        patient_location: {"lat": float, "lng": float}
+        eta_minutes: Estimated time of arrival
+    
+    Returns:
+        dict with notification status
+    """
+    
+    # Check if Twilio is configured
+    if not all([TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_FROM_NUMBER]):
+        print("⚠️  Twilio not configured. Hospital notification skipped.")
+        return {
+            "success": False,
+            "error": "Twilio not configured"
+        }
+    
+    try:
+        client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+        
+        # Create TwiML URL for hospital notification
+        twiml_url = (
+            f"{BASE_URL}/voice/hospital-alert?"
+            f"incident_id={incident_id}&"
+            f"type={emergency_type}&"
+            f"severity={severity}&"
+            f"eta={eta_minutes}"
+        )
+        
+        # Make automated call to hospital
+        call = client.calls.create(
+            to=hospital_phone,
+            from_=TWILIO_FROM_NUMBER,
+            url=twiml_url,
+            method='POST',
+            status_callback=f"{BASE_URL}/voice/call-status"
+        )
+        
+        print(f"✅ Hospital notification sent: {call.sid}")
+        
+        return {
+            "success": True,
+            "call_sid": call.sid,
+            "hospital_phone": hospital_phone
+        }
+        
+    except Exception as e:
+        print(f"❌ Failed to notify hospital: {e}")
+        return {
+            "success": False,
+            "error": str(e)
+        }

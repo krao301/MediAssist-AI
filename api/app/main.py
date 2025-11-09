@@ -7,7 +7,7 @@ import os
 load_dotenv()
 
 from .database import init_db
-from .routes import triage, alerts, route, incidents, contacts, voice
+from .routes import triage, alerts, route, incidents, contacts, voice, learning
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -32,6 +32,7 @@ app.include_router(route.router)
 app.include_router(incidents.router)
 app.include_router(contacts.router)
 app.include_router(voice.router)  # Voice call TwiML endpoints
+app.include_router(learning.router)  # AI learning & feedback system
 
 
 @app.on_event("startup")

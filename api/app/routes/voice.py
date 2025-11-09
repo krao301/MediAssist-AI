@@ -126,6 +126,42 @@ async def contact_confirm(request: Request):
     return Response(content=str(response), media_type="application/xml")
 
 
+@router.post("/hospital-alert")
+async def hospital_alert_twiml(request: Request):
+    """
+    TwiML response for hospital emergency department notification
+    """
+    params = dict(request.query_params)
+    incident_id = params.get("incident_id")
+    emergency_type = params.get("type", "unknown").replace("_", " ")
+    severity = params.get("severity", "UNKNOWN")
+    eta = params.get("eta", "unknown")
+    
+    response = VoiceResponse()
+    
+    response.say(
+        f"Emergency department notification from MediAssist AI. "
+        f"Incoming patient with {severity} severity {emergency_type}. "
+        f"Estimated time of arrival: {eta} minutes. "
+        f"Incident reference number {incident_id}. "
+        f"Patient is currently receiving pre-hospital first aid guidance. "
+        f"Please prepare for immediate triage upon arrival.",
+        voice='alice',
+        language='en-US'
+    )
+    
+    # Repeat critical info
+    response.pause(length=1)
+    response.say(
+        f"Repeating: {severity} {emergency_type}. ETA {eta} minutes. "
+        f"Incident {incident_id}. Prepare for immediate triage.",
+        voice='alice',
+        language='en-US'
+    )
+    
+    return Response(content=str(response), media_type="application/xml")
+
+
 @router.post("/call-status")
 async def call_status(request: Request):
     """

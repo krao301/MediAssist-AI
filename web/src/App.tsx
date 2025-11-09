@@ -4,6 +4,7 @@ import Home from './routes/Home';
 import Incident from './routes/Incident';
 import Contacts from './routes/Contacts';
 import Summary from './routes/Summary';
+import Dashboard from './routes/Dashboard';
 import './styles/index.css';
 
 function App() {
@@ -14,6 +15,7 @@ function App() {
         <Route path="/incident/:incidentId" element={<Incident />} />
         <Route path="/contacts" element={<Contacts />} />
         <Route path="/summary/:incidentId" element={<Summary />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </BrowserRouter>
   );
