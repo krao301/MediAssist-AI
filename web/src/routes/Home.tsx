@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentLocation, requestLocationPermission, requestMicrophonePermission } from '../lib/permissions';
 import { createIncident } from '../lib/api';

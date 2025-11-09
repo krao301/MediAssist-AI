@@ -9,14 +9,14 @@ const api = axios.create({
   },
 });
 
-// Add auth token if available
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('auth_token');
+// Function to set the auth token (will be called from components with Auth0 hook)
+export const setAuthToken = (token: string | null) => {
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } else {
+    delete api.defaults.headers.common['Authorization'];
   }
-  return config;
-});
+};
 
 export default api;
 

@@ -66,6 +66,7 @@ class Incident(BaseModel):
     ended_at: Optional[datetime]
     incident_metadata: Optional[Dict[str, Any]] = None
 
+    
     class Config:
         from_attributes = True
 

@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import Dict, Any, List, Optional
 from datetime import datetime
 from pydantic import BaseModel
-from ..models import Incident, IncidentEvent
+from ..models import Incident, IncidentEvent, User
 from ..schemas import IncidentCreate, Incident as IncidentSchema
 from ..deps.auth import demo_auth
 from ..database import get_db
@@ -21,8 +21,22 @@ def create_incident(
     """
     Create a new emergency incident
     """
-    # Get or create user - for demo, create if doesn't exist
-    user_id = 1  # Demo - in production, look up by user['sub']
+    # Get or create demo user
+    demo_user = db.query(User).filter(User.id == 1).first()
+    if not demo_user:
+        demo_user = User(
+            id=1,
+            auth0_sub="demo_user",
+            name="Demo User",
+            phone="+1234567890",
+            locale="en",
+            consent_location=True
+        )
+        db.add(demo_user)
+        db.commit()
+        db.refresh(demo_user)
+    
+    user_id = demo_user.id
     
     # Check if demo user exists, create if not
     from ..models import User
