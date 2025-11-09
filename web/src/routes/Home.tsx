@@ -124,6 +124,22 @@ export default function Home() {
           <p className="font-semibold text-red-400">⚠️ ALWAYS CALL 911 FIRST</p>
           <p>This app provides guidance while waiting for emergency services. It is not a substitute for professional medical care.</p>
         </div>
+
+        {/* Navigation */}
+        <div className="pt-4 flex gap-4 justify-center flex-wrap">
+          <button
+            onClick={() => navigate('/dashboard')}
+            className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg"
+          >
+            🧠 AI Dashboard
+          </button>
+          <button
+            onClick={() => navigate('/contacts')}
+            className="text-blue-400 hover:text-blue-300 text-sm underline self-center"
+          >
+            Manage Contacts
+          </button>
+        </div>
       </div>
     </div>
   );
