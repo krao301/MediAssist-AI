@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface MetronomeProps {
   bpm: number;
@@ -7,7 +7,7 @@ interface MetronomeProps {
 export default function Metronome({ bpm }: MetronomeProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [beat, setBeat] = useState(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const intervalRef = useRef<number | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
 
   useEffect(() => {

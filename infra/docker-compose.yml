@@ -1,35 +1,81 @@
-version: '3.8'
-
 services:
-  postgres:
-    image: postgres:15
-    environment:
-      POSTGRES_USER: mediassist
-      POSTGRES_PASSWORD: mediassist
-      POSTGRES_DB: mediassist
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+  # Note: Using Neon PostgreSQL cloud database instead of local postgres
+  # postgres service removed - using external Neon DB
 
   redis:
     image: redis:7-alpine
-    ports:
-      - "6379:6379"
 
   api:
-    build: ../api
-    ports:
-      - "8000:8000"
+    build:
+      context: ..
+      dockerfile: Dockerfile.api
     environment:
-      DB_URL: postgresql+psycopg://mediassist:mediassist@postgres:5432/mediassist
+      DB_URL: postgresql+psycopg://neondb_owner:npg_TJOy0MUH8YiA@ep-withered-unit-ad1fm90p-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require
       REDIS_URL: redis://redis:6379/0
     depends_on:
-      - postgres
       - redis
+    ports:
+      - "8000:8000"
+
+  web:
+    build:
+      context: ..
+      dockerfile: Dockerfile.web
+    depends_on:
+      - api
+    ports:
+      - "3000:80"
+
+  node-exporter:
+    image: prom/node-exporter
+    ports:
+      - "9100:9100"
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    ports:
+      - "8081:8080"
     volumes:
-      - ../api:/app
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+      - /:/rootfs:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /sys:/sys:ro
+
+  # postgres-exporter removed - using external Neon PostgreSQL database
+
+  redis-exporter:
+    image: oliver006/redis_exporter
+    command: --redis.addr=redis:6379
+    depends_on:
+      - redis
+    ports:
+      - "9121:9121"
+
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
+    depends_on:
+      - api
+      - node-exporter
+      - cadvisor
+      - redis-exporter
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
 
 volumes:
-  postgres_data:
+  grafana_data:
