@@ -21,8 +21,20 @@ api.interceptors.request.use((config) => {
 export default api;
 
 // API functions
-export const triageEmergency = (text: string, locale = 'en', ageGroup?: string) => {
-  return api.post('/triage', { text, locale, age_group: ageGroup });
+export const triageEmergency = (
+  text: string,
+  locale = 'en',
+  ageGroup?: string,
+  latitude?: number,
+  longitude?: number
+) => {
+  return api.post('/triage', {
+    text,
+    locale,
+    age_group: ageGroup,
+    latitude,
+    longitude
+  });
 };
 
 export const sendAlerts = (incidentId: number, lat: number, lng: number, message: string, radiusM = 500) => {

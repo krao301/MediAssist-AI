@@ -66,20 +66,20 @@ def send_voice_call(phone: str, message: str) -> bool:
     account_sid = os.getenv("TWILIO_ACCOUNT_SID")
     auth_token = os.getenv("TWILIO_AUTH_TOKEN")
     from_number = os.getenv("TWILIO_FROM_NUMBER")
-    
+
     if not all([account_sid, auth_token, from_number]):
         return False
-    
+
     try:
         client = Client(account_sid, auth_token)
-        
+
         # TwiML for voice message
         twiml = f"""
         <Response>
             <Say voice="alice">Emergency alert. {message}. Please check your messages for details.</Say>
         </Response>
         """
-        
+
         call = client.calls.create(
             twiml=twiml,
             to=phone,
@@ -89,3 +89,45 @@ def send_voice_call(phone: str, message: str) -> bool:
     except Exception as e:
         print(f"Voice call error: {e}")
         return False
+
+def send_sms_alert(to_number: str, message: str) -> dict:
+    """
+    Send SMS alert via Twilio
+
+    Args:
+        to_number: Recipient phone number
+        message: SMS message content
+
+    Returns:
+        dict with success status and message_sid
+    """
+    account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+    auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+    from_number = os.getenv("TWILIO_FROM_NUMBER")
+
+    if not all([account_sid, auth_token, from_number]):
+        return {
+            "success": False,
+            "error": "Twilio credentials not configured"
+        }
+
+    try:
+        client = Client(account_sid, auth_token)
+
+        message_obj = client.messages.create(
+            body=message,
+            from_=from_number,
+            to=to_number
+        )
+
+        return {
+            "success": True,
+            "message_sid": message_obj.sid,
+            "to": to_number
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": str(e),
+            "to": to_number
+        }

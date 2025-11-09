@@ -1,0 +1,153 @@
+{
+  "metadata": {
+    "dataset_name": "MediAssist AI Emergency Training Dataset",
+    "version": "1.0",
+    "total_examples": 20000,
+    "created_date": "2025-01-08",
+    "description": "Fine-tuning dataset for emergency medical triage classification",
+    "categories": [
+      "cardiac_arrest",
+      "choking",
+      "severe_bleeding",
+      "burn",
+      "minor_cut",
+      "fainting",
+      "breathing_difficulty",
+      "fracture",
+      "poisoning",
+      "allergic_reaction",
+      "stroke",
+      "seizure",
+      "heat_stroke",
+      "hypothermia",
+      "drowning",
+      "head_injury",
+      "chest_pain",
+      "abdominal_pain",
+      "back_injury",
+      "eye_injury"
+    ],
+    "severity_levels": ["CRITICAL", "SEVERE", "MODERATE", "MILD"]
+  },
+  "examples": [
+    {
+      "id": 1,
+      "input": "My grandfather collapsed and isn't breathing",
+      "age_group": "elderly",
+      "expected_output": {
+        "emergency_type": "cardiac_arrest",
+        "severity": "CRITICAL",
+        "confidence": 0.95,
+        "requires_sos": true,
+        "requires_helpers": true,
+        "reasoning": "Collapse with no breathing in elderly patient indicates cardiac arrest - immediate CPR and 911 required",
+        "key_symptoms": ["collapsed", "not breathing", "elderly"],
+        "red_flags": ["unconscious", "respiratory arrest"]
+      }
+    },
+    {
+      "id": 2,
+      "input": "Someone is choking on food at dinner, turning blue",
+      "age_group": "adult",
+      "expected_output": {
+        "emergency_type": "choking",
+        "severity": "CRITICAL",
+        "confidence": 0.98,
+        "requires_sos": true,
+        "requires_helpers": true,
+        "reasoning": "Choking with cyanosis (turning blue) indicates complete airway obstruction - immediate Heimlich required",
+        "key_symptoms": ["choking", "cyanosis", "airway obstruction"],
+        "red_flags": ["turning blue", "unable to breathe"]
+      }
+    },
+    {
+      "id": 3,
+      "input": "I cut my finger chopping vegetables, small amount of blood",
+      "age_group": "adult",
+      "expected_output": {
+        "emergency_type": "minor_cut",
+        "severity": "MILD",
+        "confidence": 0.90,
+        "requires_sos": false,
+        "requires_helpers": false,
+        "reasoning": "Kitchen cut with minor bleeding can be handled with basic first aid",
+        "needs_follow_up": true,
+        "follow_up_question": "Is the bleeding stopping with pressure? Can you see how deep the cut is?",
+        "key_symptoms": ["cut", "minor bleeding"]
+      }
+    },
+    {
+      "id": 4,
+      "input": "My friend suddenly can't move their right arm and face is drooping",
+      "age_group": "adult",
+      "expected_output": {
+        "emergency_type": "stroke",
+        "severity": "CRITICAL",
+        "confidence": 0.92,
+        "requires_sos": true,
+        "requires_helpers": true,
+        "reasoning": "Sudden onset of unilateral weakness and facial drooping are classic stroke symptoms - time-critical emergency",
+        "key_symptoms": ["facial drooping", "arm weakness", "sudden onset"],
+        "red_flags": ["stroke symptoms", "time-sensitive"]
+      }
+    },
+    {
+      "id": 5,
+      "input": "Child touched hot stove, has red mark on hand",
+      "age_group": "child",
+      "expected_output": {
+        "emergency_type": "burn",
+        "severity": "MODERATE",
+        "confidence": 0.85,
+        "requires_sos": false,
+        "requires_helpers": false,
+        "reasoning": "First-degree burn in child needs cooling and monitoring, escalate to SEVERE if large area or deep",
+        "needs_follow_up": true,
+        "follow_up_question": "How large is the burned area? Are there any blisters forming?",
+        "key_symptoms": ["burn", "red skin", "child"],
+        "red_flags": []
+      }
+    }
+  ],
+  "instructions_for_dataset_generation": {
+    "step_1": "Generate 20,000 diverse emergency scenarios",
+    "step_2": "Include variations for age groups (child, adult, elderly)",
+    "step_3": "Cover all severity levels proportionally: CRITICAL (20%), SEVERE (30%), MODERATE (30%), MILD (20%)",
+    "step_4": "Include edge cases and ambiguous scenarios",
+    "step_5": "Add multilingual examples if needed",
+    "step_6": "Include follow-up conversations for MILD cases",
+    "data_sources": [
+      "Medical emergency call transcripts (anonymized)",
+      "First-aid training materials",
+      "Emergency medicine textbooks",
+      "CDC emergency guidelines",
+      "American Heart Association protocols",
+      "Poison control center data",
+      "EMS response logs"
+    ],
+    "format": "JSON Lines (.jsonl) for Gemini fine-tuning API"
+  },
+  "sample_jsonl_format_for_gemini": {
+    "description": "Each line should be a JSON object with 'contents' field",
+    "example": {
+      "contents": [
+        {
+          "role": "user",
+          "parts": [
+            {
+              "text": "Emergency: My grandfather collapsed and isn't breathing. Age: elderly."
+            }
+          ]
+        },
+        {
+          "role": "model",
+          "parts": [
+            {
+              "text": "{\"emergency_type\": \"cardiac_arrest\", \"severity\": \"CRITICAL\", \"confidence\": 0.95, \"requires_sos\": true, \"requires_helpers\": true, \"reasoning\": \"Collapse with no breathing in elderly patient indicates cardiac arrest - immediate CPR and 911 required\"}"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

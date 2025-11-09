@@ -1,13 +1,19 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+import os
+
+# Load environment variables from .env file
+load_dotenv()
+
 from .database import init_db
-from .routes import triage, alerts, route, incidents, contacts
+from .routes import triage, alerts, route, incidents, contacts, voice
 
 # Initialize FastAPI app
 app = FastAPI(
     title="MediAssist AI API",
     description="Emergency first-aid coach with hyperlocal alerts",
-    version="1.0.0"
+    version="1.0.0",
 )
 
 # CORS configuration
@@ -25,11 +31,14 @@ app.include_router(alerts.router)
 app.include_router(route.router)
 app.include_router(incidents.router)
 app.include_router(contacts.router)
+app.include_router(voice.router)  # Voice call TwiML endpoints
+
 
 @app.on_event("startup")
 def on_startup():
     """Initialize database on startup"""
     init_db()
+
 
 @app.get("/")
 def root():
@@ -44,15 +53,18 @@ def root():
             "alerts": "/alerts",
             "route": "/route",
             "incidents": "/incidents",
-            "contacts": "/contacts"
-        }
+            "contacts": "/contacts",
+        },
     }
+
 
 @app.get("/health")
 def health_check():
     """Health check endpoint"""
     return {"status": "healthy"}
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

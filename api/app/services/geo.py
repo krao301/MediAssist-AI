@@ -5,7 +5,7 @@ from ..models import Contact
 
 def haversine(lon1: float, lat1: float, lon2: float, lat2: float) -> float:
     """
-    Calculate the great circle distance in meters between two points 
+    Calculate the great circle distance in meters between two points
     on the earth (specified in decimal degrees)
     """
     # Convert decimal degrees to radians
@@ -16,10 +16,17 @@ def haversine(lon1: float, lat1: float, lon2: float, lat2: float) -> float:
     dlat = lat2 - lat1
     a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
     c = 2 * asin(sqrt(a))
-    
+
     # Radius of earth in meters
     r = 6371000
     return c * r
+
+def haversine_distance(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
+    """
+    Alias for haversine with more intuitive parameter order (lat, lng)
+    Returns distance in meters
+    """
+    return haversine(lng1, lat1, lng2, lat2)
 
 def contacts_within_radius(
     db: Session,
