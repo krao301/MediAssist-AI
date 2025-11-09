@@ -1,5 +1,37 @@
 # Testing Guide
 
+## 🔄 Auth0 Login Testing (NEW)
+
+### Force Fresh Login Every Time
+
+**What Changed:**
+- Every role selection now shows the **full Auth0 login/signup page**
+- No auto-login with cached credentials
+- Users can freely choose accounts or sign up new
+
+**Test Steps:**
+1. Visit http://localhost:5173
+2. Click any role (Citizen, Hospital, or First Responder)
+3. ✅ Should see full Auth0 login page (not "Authorize as abc@gmail.com")
+4. Can sign up or login with any account
+5. After auth, redirected to home page
+
+**If You See Auto-Login:**
+- Click the yellow "🔄 Click here to sign out..." button on login page
+- Or use incognito mode (Ctrl+Shift+N)
+- Or clear browser cache
+
+**Parameters Used:**
+```typescript
+authorizationParams: {
+  prompt: 'login',      // Force login screen
+  max_age: 0,           // Ignore existing sessions
+  screen_hint: 'signup' // Show signup tab
+}
+```
+
+---
+
 ## Manual Testing Checklist
 
 ### 1. Backend API Tests

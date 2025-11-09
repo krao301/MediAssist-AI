@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getCurrentLocation, requestLocationPermission, requestMicrophonePermission } from '../lib/permissions';
 import { createIncident } from '../lib/api';
+import { UserProfile } from '../components/UserProfile';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -43,6 +44,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-b from-gray-900 to-black">
+      {/* User Profile in top right corner */}
+      <UserProfile />
+      
       <div className="max-w-md w-full text-center space-y-8">
         {/* Logo/Header */}
         <div className="space-y-2">
