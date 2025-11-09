@@ -37,21 +37,6 @@ def create_incident(
         db.refresh(demo_user)
     
     user_id = demo_user.id
-    
-    # Check if demo user exists, create if not
-    from ..models import User
-    demo_user = db.query(User).filter(User.id == user_id).first()
-    if not demo_user:
-        demo_user = User(
-            id=user_id,
-            auth0_sub="demo_user",
-            name="Demo User",
-            phone="+1234567890",
-            locale="en",
-            consent_location=True
-        )
-        db.add(demo_user)
-        db.commit()
 
     incident = Incident(
         user_id=user_id,

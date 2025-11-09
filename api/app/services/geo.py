@@ -3,6 +3,7 @@ from typing import List, Tuple
 from sqlalchemy.orm import Session
 from ..models import Contact
 
+
 def haversine(lon1: float, lat1: float, lon2: float, lat2: float) -> float:
     """
     Calculate the great circle distance in meters between two points
@@ -14,12 +15,13 @@ def haversine(lon1: float, lat1: float, lon2: float, lat2: float) -> float:
     # Haversine formula
     dlon = lon2 - lon1
     dlat = lat2 - lat1
-    a = sin(dlat/2)**2 + cos(lat1) * cos(lat2) * sin(dlon/2)**2
+    a = sin(dlat / 2) ** 2 + cos(lat1) * cos(lat2) * sin(dlon / 2) ** 2
     c = 2 * asin(sqrt(a))
 
     # Radius of earth in meters
     r = 6371000
     return c * r
+
 
 def haversine_distance(lat1: float, lng1: float, lat2: float, lng2: float) -> float:
     """
@@ -28,35 +30,37 @@ def haversine_distance(lat1: float, lng1: float, lat2: float, lng2: float) -> fl
     """
     return haversine(lng1, lat1, lng2, lat2)
 
+
 def contacts_within_radius(
     db: Session,
     user_id: int,
     incident_lat: float,
     incident_lng: float,
-    radius_m: int = 500
+    radius_m: int = 500,
 ) -> List[Tuple[Contact, float]]:
     """
     Find all contacts within specified radius of incident location
     Returns list of (contact, distance_m) tuples sorted by distance
     """
     contacts = db.query(Contact).filter(Contact.user_id == user_id).all()
-    
+
     nearby = []
     for contact in contacts:
         distance = haversine(incident_lng, incident_lat, contact.lng, contact.lat)
         if distance <= radius_m:
             nearby.append((contact, distance))
-    
+
     # Sort by distance (closest first)
     nearby.sort(key=lambda x: x[1])
     return nearby
+
 
 def find_nearest_hospital(lat: float, lng: float, maps_api_key: str) -> dict:
     """
     Use Google Maps Places API to find nearest hospital
     """
     import requests
-    
+
     if not maps_api_key:
         # Fallback for demo
         return {
@@ -64,9 +68,9 @@ def find_nearest_hospital(lat: float, lng: float, maps_api_key: str) -> dict:
             "address": "Use Google Maps to find nearest ER",
             "distance_km": 0,
             "eta_minutes": 0,
-            "directions_url": f"https://www.google.com/maps/search/hospital/@{lat},{lng},15z"
+            "directions_url": f"https://www.google.com/maps/search/hospital/@{lat},{lng},15z",
         }
-    
+
     try:
         # Places API Nearby Search
         url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json"
@@ -75,62 +79,63 @@ def find_nearest_hospital(lat: float, lng: float, maps_api_key: str) -> dict:
             "rankby": "distance",
             "type": "hospital",
             "keyword": "emergency",
-            "key": maps_api_key
+            "key": maps_api_key,
         }
-        
+
         response = requests.get(url, params=params)
         data = response.json()
-        
+
         if data.get("results"):
             place = data["results"][0]
             place_loc = place["geometry"]["location"]
             place_id = place.get("place_id")
-            
+
             # Get phone number from Place Details API
             phone_number = None
             if place_id:
                 try:
-                    details_url = "https://maps.googleapis.com/maps/api/place/details/json"
+                    details_url = (
+                        "https://maps.googleapis.com/maps/api/place/details/json"
+                    )
                     details_params = {
                         "place_id": place_id,
                         "fields": "formatted_phone_number,international_phone_number",
-                        "key": maps_api_key
+                        "key": maps_api_key,
                     }
                     details_response = requests.get(details_url, params=details_params)
                     details_data = details_response.json()
                     if details_data.get("result"):
-                        phone_number = (
-                            details_data["result"].get("international_phone_number") or 
-                            details_data["result"].get("formatted_phone_number")
-                        )
+                        phone_number = details_data["result"].get(
+                            "international_phone_number"
+                        ) or details_data["result"].get("formatted_phone_number")
                 except Exception as e:
                     print(f"Error fetching hospital phone: {e}")
-            
+
             # Calculate distance
             distance_m = haversine(lng, lat, place_loc["lng"], place_loc["lat"])
             distance_km = distance_m / 1000
-            
+
             # Estimate ETA (assuming 40 km/h average speed in emergency)
             eta_minutes = int((distance_km / 40) * 60)
-            
+
             directions_url = f"https://www.google.com/maps/dir/?api=1&origin={lat},{lng}&destination={place_loc['lat']},{place_loc['lng']}&travelmode=driving"
-            
+
             return {
                 "name": place.get("name", "Hospital"),
                 "address": place.get("vicinity", ""),
                 "phone": phone_number,
                 "distance_km": round(distance_km, 2),
                 "eta_minutes": max(1, eta_minutes),
-                "directions_url": directions_url
+                "directions_url": directions_url,
             }
     except Exception as e:
         print(f"Maps API error: {e}")
-    
+
     # Fallback
     return {
         "name": "Nearest Emergency Room",
         "address": "Search for nearest hospital",
         "distance_km": 0,
         "eta_minutes": 0,
-        "directions_url": f"https://www.google.com/maps/search/hospital/@{lat},{lng},15z"
+        "directions_url": f"https://www.google.com/maps/search/hospital/@{lat},{lng},15z",
     }

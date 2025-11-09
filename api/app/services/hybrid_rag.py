@@ -302,21 +302,21 @@ class HybridRAGSystem:
         # Weighted Voting - Give more weight to more reliable sources
         votes = {}
         weights = {
-            "vector_db": 0.3,      # 30% weight - good for similar cases
-            "knowledge_graph": 0.4, # 40% weight - symptom-based, very reliable
-            "gemini_ai": 0.5        # 50% weight - most sophisticated reasoning
+            "vector_db": 0.3,  # 30% weight - good for similar cases
+            "knowledge_graph": 0.4,  # 40% weight - symptom-based, very reliable
+            "gemini_ai": 0.5,  # 50% weight - most sophisticated reasoning
         }
-        
+
         if vector_type:
             weighted_score = vector_conf * weights["vector_db"]
             votes[vector_type] = votes.get(vector_type, 0) + weighted_score
             sources.append("vector_db")
-            
+
         if graph_type:
             weighted_score = graph_conf * weights["knowledge_graph"]
             votes[graph_type] = votes.get(graph_type, 0) + weighted_score
             sources.append("knowledge_graph")
-            
+
         if llm_type:
             weighted_score = llm_conf * weights["gemini_ai"]
             votes[llm_type] = votes.get(llm_type, 0) + weighted_score
@@ -326,20 +326,23 @@ class HybridRAGSystem:
         if votes:
             winner = max(votes.items(), key=lambda x: x[1])
             final_type = winner[0]
-            
+
             # Calculate weighted average confidence
             total_weight = sum(weights[s] for s in sources if s in weights)
             final_confidence = winner[1] / total_weight if total_weight > 0 else 0.0
-            
+
             # Boost confidence if multiple sources agree
             agreeing_sources = [
-                s for s in sources 
-                if (s == "vector_db" and vector_type == final_type) or
-                   (s == "knowledge_graph" and graph_type == final_type) or
-                   (s == "gemini_ai" and llm_type == final_type)
+                s
+                for s in sources
+                if (s == "vector_db" and vector_type == final_type)
+                or (s == "knowledge_graph" and graph_type == final_type)
+                or (s == "gemini_ai" and llm_type == final_type)
             ]
             if len(agreeing_sources) >= 2:
-                final_confidence = min(final_confidence * 1.2, 0.99)  # Boost by 20%, cap at 99%
+                final_confidence = min(
+                    final_confidence * 1.2, 0.99
+                )  # Boost by 20%, cap at 99%
         else:
             final_type = "unknown"
             final_confidence = 0.0
@@ -394,10 +397,12 @@ class HybridRAGSystem:
         # SOS LOGIC: Trigger for ANY CRITICAL/SEVERE emergency
         # Whether person is responsive or not doesn't matter - if it's severe, call SOS
         should_trigger_sos = kb_entry.get("requires_sos", True)
-        
+
         if should_trigger_sos:
-            print(f"🚨 SOS WILL BE TRIGGERED: {severity} emergency detected ({final_type})")
-        
+            print(
+                f"🚨 SOS WILL BE TRIGGERED: {severity} emergency detected ({final_type})"
+            )
+
         # Build final response
         result = {
             "type": final_type,
@@ -405,9 +410,7 @@ class HybridRAGSystem:
             "confidence": round(final_confidence, 3),
             "requires_sos": should_trigger_sos,
             "requires_helpers": kb_entry.get("requires_helpers", True),
-            "sos_number": (
-                EMERGENCY_SOS_NUMBER if should_trigger_sos else None
-            ),
+            "sos_number": (EMERGENCY_SOS_NUMBER if should_trigger_sos else None),
             "steps": kb_entry.get("steps", generate_generic_emergency_steps()),
             "bring": kb_entry.get("bring", []),
             "helper_instructions": kb_entry.get("helper_instructions", ""),
@@ -517,13 +520,13 @@ class HybridRAGSystem:
     def _detect_unresponsiveness(self, text: str) -> bool:
         """
         Detect if the person is unresponsive/unconscious from user input
-        
+
         Returns True if person appears unable to help themselves
         """
         import re
-        
+
         text_lower = text.lower()
-        
+
         # Unresponsiveness indicators
         unresponsive_patterns = [
             r"\bunresponsive\b",
@@ -543,22 +546,22 @@ class HybridRAGSystem:
             r"\bcan'?t\s+wake\b",
             r"\bno\s+response\b",
         ]
-        
+
         for pattern in unresponsive_patterns:
             if re.search(pattern, text_lower):
                 return True
-        
+
         # First-person indicators (user is the patient, not someone helping)
         first_person_patterns = [
             r"\bi\s+(have|feel|am|got)\b",
             r"\bmy\s+(chest|arm|head|leg|heart)\b",
             r"\bi'?m\s+(feeling|having|experiencing)\b",
         ]
-        
+
         for pattern in first_person_patterns:
             if re.search(pattern, text_lower):
                 return False  # User can help themselves, no auto-SOS
-        
+
         return False  # Default: don't trigger SOS unless clear unresponsiveness
 
     def _generate_clarifying_questions(

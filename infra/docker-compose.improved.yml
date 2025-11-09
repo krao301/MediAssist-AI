@@ -1,0 +1,162 @@
+services:
+  # Redis Cache & Session Store
+  redis:
+    image: redis:7-alpine
+    container_name: mediassist-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    networks:
+      - mediassist-network
+
+  # FastAPI Backend
+  api:
+    build:
+      context: ..
+      dockerfile: Dockerfile.api
+    container_name: mediassist-api
+    restart: unless-stopped
+    env_file:
+      - ../api/.env.docker
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - mediassist-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # React Frontend
+  web:
+    build:
+      context: ..
+      dockerfile: Dockerfile.web
+    container_name: mediassist-web
+    restart: unless-stopped
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "3000:80"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:80" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - mediassist-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # System Metrics Exporter
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: mediassist-node-exporter
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    networks:
+      - mediassist-network
+
+  # Container Metrics Exporter
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: mediassist-cadvisor
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /sys:/sys:ro
+    networks:
+      - mediassist-network
+
+  # Redis Metrics Exporter
+  redis-exporter:
+    image: oliver006/redis_exporter:latest
+    container_name: mediassist-redis-exporter
+    restart: unless-stopped
+    command: --redis.addr=redis:6379
+    depends_on:
+      redis:
+        condition: service_healthy
+    ports:
+      - "9121:9121"
+    networks:
+      - mediassist-network
+
+  # Prometheus Metrics Collection
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    container_name: mediassist-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--web.console.libraries=/usr/share/prometheus/console_libraries"
+      - "--web.console.templates=/usr/share/prometheus/consoles"
+    ports:
+      - "9090:9090"
+    depends_on:
+      - api
+      - node-exporter
+      - cadvisor
+      - redis-exporter
+    networks:
+      - mediassist-network
+
+  # Grafana Monitoring Dashboard
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: mediassist-grafana
+    restart: unless-stopped
+    ports:
+      - "3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - mediassist-network
+
+volumes:
+  prometheus_data:
+    name: mediassist-prometheus-data
+  grafana_data:
+    name: mediassist-grafana-data
+
+networks:
+  mediassist-network:
+    name: mediassist-network
+    driver: bridge
