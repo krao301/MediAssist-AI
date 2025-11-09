@@ -10,6 +10,7 @@ export default function Home() {
 
   useEffect(() => {
     checkPermissions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const checkPermissions = async () => {

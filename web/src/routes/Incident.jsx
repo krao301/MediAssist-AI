@@ -5,42 +5,29 @@ import { speak, startListening, stopSpeaking } from '../lib/tts';
 import StepCard from '../components/StepCard';
 import Metronome from '../components/Metronome';
 
-interface Step {
-  title: string;
-  detail: string;
-  timer_s?: number;
-  cadence_bpm?: number;
-}
-
-interface TriageResult {
-  type: string;
-  severity: string;
-  steps: Step[];
-  bring: string[];
-}
-
 export default function Incident() {
-  const { incidentId } = useParams<{ incidentId: string }>();
+  const { incidentId } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   
   const [currentLocation] = useState(location.state?.location || { lat: 0, lng: 0 });
-  const [triage, setTriage] = useState<TriageResult | null>(null);
+  const [triage, setTriage] = useState(null);
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [loading, setLoading] = useState(false);
   const [listening, setListening] = useState(false);
   const [transcript, setTranscript] = useState('');
-  const [hospital, setHospital] = useState<any>(null);
+  const [hospital, setHospital] = useState(null);
   const [alertsSent, setAlertsSent] = useState(false);
 
   useEffect(() => {
     // Auto-start voice input
     handleStartListening();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleStartListening = () => {
     setListening(true);
-    const stop = startListening(
+    startListening(
       (text) => {
         setTranscript(text);
         setListening(false);
@@ -59,7 +46,7 @@ export default function Incident() {
     );
   };
 
-  const handleTriage = async (text: string) => {
+  const handleTriage = async (text) => {
     setLoading(true);
     
     try {
@@ -69,7 +56,7 @@ export default function Incident() {
       setTriage(result);
       
       // Log initial event
-      await addIncidentEvent(parseInt(incidentId!), `Triage: ${result.type} (${result.severity})`);
+      await addIncidentEvent(parseInt(incidentId), `Triage: ${result.type} (${result.severity})`);
       
       // Speak first step
       if (result.steps.length > 0) {
@@ -90,11 +77,11 @@ export default function Incident() {
     }
   };
 
-  const sendEmergencyAlerts = async (triageResult: TriageResult) => {
+  const sendEmergencyAlerts = async (triageResult) => {
     try {
       const message = `Emergency: ${triageResult.type.replace('_', ' ')}. ${triageResult.bring.join(', ')}.`;
       await sendAlerts(
-        parseInt(incidentId!),
+        parseInt(incidentId),
         currentLocation.lat,
         currentLocation.lng,
         message
@@ -126,13 +113,13 @@ export default function Incident() {
       speak(step.title + '. ' + step.detail);
       
       // Log event
-      await addIncidentEvent(parseInt(incidentId!), `Completed: ${triage.steps[currentStepIndex].title}`);
+      await addIncidentEvent(parseInt(incidentId), `Completed: ${triage.steps[currentStepIndex].title}`);
     }
   };
 
   const handleEndIncident = async () => {
     try {
-      await resolveIncident(parseInt(incidentId!));
+      await resolveIncident(parseInt(incidentId));
       stopSpeaking();
       navigate(`/summary/${incidentId}`);
     } catch (error) {
