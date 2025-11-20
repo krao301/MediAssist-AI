@@ -1,0 +1,68 @@
+#!/bin/bash
+
+# ⚡ INSTANT DEVPOST SUBMISSION HELPER
+# This script gives you everything you need for DevPost
+
+echo "═══════════════════════════════════════════════"
+echo "   ⚡ MediAssist AI - DevPost Submission"
+echo "═══════════════════════════════════════════════"
+echo ""
+
+# Check if frontend is built
+if [ ! -d "web/dist" ]; then
+    echo "📦 Building frontend..."
+    cd web && npm run build && cd ..
+else
+    echo "✅ Frontend already built!"
+fi
+
+echo ""
+echo "═══════════════════════════════════════════════"
+echo "   📋 YOUR SUBMISSION INFO"
+echo "═══════════════════════════════════════════════"
+echo ""
+echo "🎯 DevPost URL:"
+echo "   https://ub-hacking-fall-2025.devpost.com/"
+echo ""
+echo "📁 GitHub Repo:"
+echo "   https://github.com/krao301/MediAssist-AI"
+echo ""
+echo "🐳 Docker Images (Public):"
+echo "   docker.io/hrithikesh11/mediassist-api:latest"
+echo "   docker.io/hrithikesh11/mediassist-web:latest"
+echo ""
+echo "═══════════════════════════════════════════════"
+echo "   🚀 DEPLOYMENT STEPS (15 min)"
+echo "═══════════════════════════════════════════════"
+echo ""
+echo "1️⃣  BACKEND (5 min):"
+echo "   → https://render.com (Sign up free)"
+echo "   → New + → Web Service → Existing Image"
+echo "   → Image: docker.io/hrithikesh11/mediassist-api:latest"
+echo "   → Add environment variables (see DEVPOST_SUBMISSION.md)"
+echo "   → Deploy!"
+echo ""
+echo "2️⃣  FRONTEND (5 min):"
+echo "   → https://dash.cloudflare.com"
+echo "   → Workers & Pages → Create → Upload Assets"
+echo "   → Upload folder: web/dist"
+echo "   → Deploy!"
+echo ""
+echo "3️⃣  UPDATE AUTH0 (2 min):"
+echo "   → https://manage.auth0.com"
+echo "   → Add your Cloudflare URL to callback URLs"
+echo ""
+echo "4️⃣  SUBMIT TO DEVPOST (3 min):"
+echo "   → Fill out form with your deployed URLs"
+echo ""
+echo "═══════════════════════════════════════════════"
+echo "   📄 FULL GUIDE"
+echo "═══════════════════════════════════════════════"
+echo ""
+echo "Open: DEVPOST_SUBMISSION.md for step-by-step"
+echo ""
+echo "🎉 Your frontend is ready at: web/dist"
+echo ""
+echo "⚡ Quick tip: Start with Render backend deployment"
+echo "   while reading the guide!"
+echo ""
