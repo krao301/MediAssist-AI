@@ -90,8 +90,29 @@ export default function Incident() {
 
       setTriage(result);
 
-      // Log initial event
-      await addIncidentEvent(parseInt(incidentId!), `Triage: ${result.type} (${result.severity})`);
+      // Log initial event along with structured metadata for summaries
+      const eventMetadata = {
+        user_input: text,
+        type: result.type,
+        severity: result.severity,
+        requires_sos: result.requires_sos,
+        requires_helpers: result.requires_helpers,
+        helper_instructions: result.helper_instructions,
+        protocols: result.bring,
+        symptoms: result.symptoms,
+        contraindications: result.contraindications,
+        voice_text: result.first_aid_instructions?.voice_text,
+        first_aid_instructions: result.first_aid_instructions,
+        clarifying_questions: result.clarifying_questions,
+        message: result.message,
+        timestamp: result.timestamp,
+      };
+
+      await addIncidentEvent(
+        parseInt(incidentId!),
+        `Triage: ${result.type} (${result.severity})`,
+        eventMetadata
+      );
 
       // CRITICAL FLOW: Announce emergency response
       if (result.requires_sos) {

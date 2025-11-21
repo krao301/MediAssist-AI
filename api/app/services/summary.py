@@ -27,7 +27,7 @@ def generate_incident_summary(db: Session, incident_id: int) -> Dict[str, Any]:
             "time": event.timestamp.isoformat(),
             "elapsed_seconds": int(elapsed),
             "step": event.step,
-            "metadata": event.metadata
+            "metadata": event.event_metadata
         })
     
     return {
