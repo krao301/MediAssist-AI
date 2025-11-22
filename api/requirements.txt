@@ -14,7 +14,7 @@ redis
 # AI/ML
 anthropic
 google-generativeai
-chroma_db
+chromadb
 
 # Authentication & Security
 python-jose[cryptography]
