@@ -5,7 +5,11 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# Copy only the app code
+COPY app ./app
+# Copy specific config files if needed
+COPY .env.example .
+# Do NOT copy the whole folder structure blindly
 
 EXPOSE 8000
 
