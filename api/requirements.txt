@@ -1,3 +1,6 @@
+# Force pip to pull CPU-only PyTorch wheels
+--extra-index-url https://download.pytorch.org/whl/cpu
+
 # Web Framework
 fastapi
 uvicorn[standard]
@@ -15,6 +18,7 @@ redis
 anthropic
 google-generativeai
 chromadb
+torch==2.5.1+cpu
 sentence-transformers
 
 # Authentication & Security
