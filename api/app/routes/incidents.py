@@ -21,7 +21,7 @@ def create_incident(
     """
     Create a new emergency incident
     """
-    # Get or create demo user
+    # Get or create demo user once; avoid re-import that shadows global User
     demo_user = db.query(User).filter(User.id == 1).first()
     if not demo_user:
         demo_user = User(
@@ -35,7 +35,7 @@ def create_incident(
         db.add(demo_user)
         db.commit()
         db.refresh(demo_user)
-    
+
     user_id = demo_user.id
 
     incident = Incident(
