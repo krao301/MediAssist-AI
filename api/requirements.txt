@@ -15,6 +15,7 @@ redis
 anthropic
 google-generativeai
 chromadb
+sentence-transformers
 
 # Authentication & Security
 python-jose[cryptography]
